@@ -1,0 +1,85 @@
+---
+title: "raster-functions"
+author: "Leah A. Wasser"
+date: "June 21, 2016"
+output: html_document
+---
+
+```{r import}
+
+library(raster)
+library(rgdal)
+
+chm <- raster("../NEONdata/D17-California/TEAK/2013/lidar/TEAK_lidarCHM.tif")
+
+plot(chm)
+chm[chm==0] <- NA
+density(chm)
+
+height.class.m <- c(0, 6, 1,
+                    6, 30, 2,
+                    30, 50, 3,
+                    50, 100, 4)
+
+height.class.mat <- matrix(height.class.m,
+                         ncol=3,
+                         byrow=TRUE)
+
+height.class.mat
+
+reclassified.chm <- reclassify(chm,
+                               height.class.mat)
+reclassified.chm
+density(chm,
+        main="Canopy height density",
+        xlab = "height (m)")
+
+# sapply(reclass.height.mat[,2], function(x) abline(v = x, col = "red"))
+abline(v = height.class.mat[,2], col="red")
+
+# pdf output
+pdf(file = "TEAK-chm-density.pdf", width = 6, height = 7)
+density(chm,
+        main="Canopy height density",
+        xlab = "height (m)")
+abline(v = height.class.mat[,2], col="red")
+dev.off()
+
+```
+
+```{r plot-graphics }
+
+# margins - bottom left up right
+par(xpd = FALSE, 
+    mar = c(5.1, 4.1, 4.1, 4.5))
+
+
+plot(reclassified.chm,
+      col = c("yellow", "springgreen", "green", "blue"),
+      main="Canopy Height",
+      axes=F,
+      legend=FALSE,
+      box=FALSE)
+
+plot(extent(reclassified.chm), 
+     add=T,
+     lwd=3)
+
+par(xpd = TRUE)
+
+# legend position
+leg.x <- par()$usr[2] + 20
+leg.y <- par()$usr[4] + 50 - (abs(par()$usr[3] - par()$usr[4]) / 2)
+
+
+# add legend
+legend(leg.x, leg.y,
+       legend = c("0-6m", "6-30", "30-50", "50-100"),
+       fill=c("yellow", "springgreen", "green", "blue"),
+       bty = "n") # turn off legend border
+
+
+
+
+```
+
